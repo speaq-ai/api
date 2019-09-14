@@ -1,0 +1,32 @@
+version: "3.7"
+services:
+  speaq-db:
+    image: postgres
+    restart: always
+    volumes:
+      - speaq-data:/var/lib/postgresql/data
+    networks:
+      - backend
+    env_file:
+      - env/postgres_dev.env
+    container_name: speaq-db
+    ports: 
+      - "5432:5432"
+  speaq-api:
+    build: .
+    restart: always
+    command: bash -c "python manage.py makemigrations && python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - backend
+    env_file: 
+      - env/api_dev.env
+    container_name: speaq-api
+    ports:
+      - "8000:8000"
+
+networks:
+  backend:
+
+volumes:
+  speaq-data:
+

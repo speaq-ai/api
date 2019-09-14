@@ -1,0 +1,9 @@
+Django==2.2.5
+djangorestframework==3.10.3
+pbr==2.1.0
+psycopg2==2.8.3
+pytz==2019.2
+sqlparse==0.3.0
+stevedore==1.21.0
+virtualenv-clone==0.2.6
+virtualenvwrapper==4.7.2
