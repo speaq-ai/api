@@ -2,20 +2,38 @@
 
 ## Setup
 
-1. Clone this repository onto your local machine: `git clone https://github.com/speaq-ai/mockup.git`.
-2. Install yarn: `brew install yarn` on Mac, for other OS see [docs](https://yarnpkg.com/lang/en/docs/install/#mac-stable).
-3. Install dependencies: `yarn install`.
-4. create a `.env` file in the root directory of this project. Set the following environment variables with appropriate values.
+1. Clone this repository onto your local machine: `git clone https://github.com/speaq-ai/api.git`.
+2. Install Docker if you don't already have it. [Docker docs](https://docs.docker.com/install/)
+3. Create an `env` directory. Inside of that directory, create two files: `api_dev.env` and `postgres_dev.env`.
+4. Inside of `api_dev.env`, add the following variables, with the values I provided:
 
 ```
-MAPBOX_ACCESS_TOKEN=<your-mapbox-token>
+DB_PASSWORD=<your-db-password>
+DB_USER=<your-db-username>
+DB_NAME=<your-db-name>
+DB_HOST=<your-db-host>
+DB_PORT=<your-port>
 ```
+
+5. Inside of `postgres_dev.env`, add the following variables, with the values I provided:
+
+```
+POSTGRES_PASSWORD=<your-db-password>
+POSTGRES_USER=<your-db-user>
+POSTGRES_DB=<your-db-name>
+```
+
+6. Start the docker containers and create a django superuser with: `docker-compose up -d && docker exec -it speaq-api python manage.py createsuperuser`. Follow the prompts to create the super user.
+
+7. Finally, restart the docker containers: `docker-compose down && docker-compose up`.
+
+8. You're all set! Go to `localhost:8000/admin` and log in with the superuser credentials you supplied earlier.
 
 ## Usage
 
-To start the development web server: `yarn start`
+Start the Docker containers with `docker-compose up`
 
-Once the development web server is running, you can view the app at `localhost:8080`.
+Once the containers are running, you can access the API's admin dashboard at `localhost:8000/admin`.
 
 ## Configuration Steps
 
@@ -23,7 +41,9 @@ These are the components I've included steps I took to configure them for this p
 
 ### Components
 
-- Django: package manager (variant of npm that was created by Facebook)
+- Django
+- Postgres
+- Docker
 
 ### Steps:
 
@@ -35,5 +55,3 @@ These are the components I've included steps I took to configure them for this p
 - configure django database settings to use postgres engine
 - use manage.py to run initial migration
 - once docker network is up and running, use manage.py to create super user inside container.
-
-[Reference](https://dev.to/nsebhastian/step-by-step-react-configuration-2nma#why-create-your-own-configuration)
