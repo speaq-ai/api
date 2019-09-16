@@ -55,3 +55,7 @@ These are the components I've included steps I took to configure them for this p
 - configure django database settings to use postgres engine
 - use manage.py to run initial migration
 - once docker network is up and running, use manage.py to create super user inside container.
+
+### Additional optimizations:
+
+- include the `./src` directory as a docker volume in API service to enable hot reloads.
