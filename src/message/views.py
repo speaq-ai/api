@@ -22,7 +22,6 @@ class MessageView(APIView):
             assistant_session = AssistantAPI.create_session()
             profile.assistant_session = assistant_session
             profile.save()
-
         assistant_api = AssistantAPI(assistant_session)
 
         data = assistant_api.message(message_text)

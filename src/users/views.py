@@ -17,7 +17,7 @@ class LoginView(APIView):
         if user is not None:
             login(request, user)
             return Response("", status=status.HTTP_200_OK)
-        return Respone("User not found", status=status.HTTP_401_UNAUTHORIZED)
+        return Response("User not found", status=status.HTTP_401_UNAUTHORIZED)
 
 
 class LogoutView(APIView):

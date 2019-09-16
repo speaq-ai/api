@@ -51,6 +51,10 @@ class AssistantAPI:
             f"/sessions/{self.session_id}/message",
             json={"input": {"text": text}},
         )
+        if res.status_code == 404:
+            self.session_id = self.create_session()
+            return self.message(text)
+
         try:
             res.raise_for_status()
         except HTTPError as e:
