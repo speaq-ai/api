@@ -1,13 +1,21 @@
 import requests
 from requests import HTTPError
 from message.constants import WATSON_ASSISTANT_BASE_URL, WATSON_ASSISTANT_API_KEY
+from message.utils.enums import ActionNames, WatsonEntities
 
+actionRequirements = {
+    ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number],
+    ActionNames.LoadDataset: [WatsonEntities.DatasetName],
+    ActionNames.Clear: []
+}
 
 class AssistantAPI:
     def __init__(self, session_id=None):
         self.session_id = (
             session_id if session_id is not None else self.create_session()
         )
+
+    # static methods below
 
     @classmethod
     def request(cls, method, url, **kwargs):
@@ -37,6 +45,21 @@ class AssistantAPI:
         except HTTPError as e:
             cls.process_error(e)
         return res.json()["session_id"]
+
+    # private methods below
+
+    # check the response by comparing the intent to the actions it can take
+    # then, check and see if any of the actions have all required parameters in the context (by using actionRequirements)
+    # returns T/F
+    def is_complete(self, assistantContext):
+        pass
+
+    # Formats the response to the client. Includes any parameters and respective actions if this is a complete
+    # response.
+    def format_response(self, assistantContext):
+        pass
+
+    # public methods below
 
     def delete_session(self):
         res = self.request("DELETE", f"/sessions/{self.session_id}")

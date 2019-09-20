@@ -3,11 +3,10 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from message.utils import AssistantAPI
+from message.utils.AssistantAPI import AssistantAPI
 from users.models import Profile
 from users.serializers import ProfileSerializer
 
-# Create your views here.
 class MessageView(APIView):
     def post(self, request):
         message_text = request.data.get("inputText")
