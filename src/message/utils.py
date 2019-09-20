@@ -49,7 +49,7 @@ class AssistantAPI:
         res = self.request(
             "POST",
             f"/sessions/{self.session_id}/message",
-            json={"input": {"text": text}},
+            json={"input": {"text": text, "options": { "return_context": True }}},
         )
         if res.status_code == 404:
             self.session_id = self.create_session()
