@@ -10,10 +10,12 @@ actionRequirements = {
 }
 
 class AssistantAPI:
-    def __init__(self, session_id=None):
-        self.session_id = (
-            session_id if session_id is not None else self.create_session()
-        )
+    def __init__(self, profile):
+        self.profile = profile
+
+        if not self.profile.assistant_session:
+            self.profile.assistant_session = self.create_session()
+            self.profile.save()
 
     # static methods below
 
@@ -71,11 +73,12 @@ class AssistantAPI:
     def message(self, text):
         res = self.request(
             "POST",
-            f"/sessions/{self.session_id}/message",
+            f"/sessions/{self.profile.assistant_session}/message",
             json={"input": {"text": text, "options": { "return_context": True }}},
         )
         if res.status_code == 404:
-            self.session_id = self.create_session()
+            self.profile.assistant_session = self.create_session()
+            self.profile.save()
             return self.message(text)
 
         try:
