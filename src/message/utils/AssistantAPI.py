@@ -54,10 +54,14 @@ class AssistantAPI:
     # then, check and see if any of the actions have all required parameters in the context (by using actionRequirements)
     # returns T/F
     def is_complete(self, assistantContext):
+        if "user_defined" not in assistantContext["skills"]["main skill"]:
+            return False
+
         contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
 
         if "action" in contextVariables:
-            requirements = actionRequirements[contextVariables["action"]]
+            actionEnum = ActionNames(contextVariables["action"])
+            requirements = actionRequirements[actionEnum]
 
             for required in requirements:
                 if required not in contextVariables:
@@ -70,8 +74,22 @@ class AssistantAPI:
 
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
-    def format_response(self, assistantContext):
-        pass
+    def format_response(self, watsonResponse):
+        if len(watsonResponse["output"]["generic"]) > 0:
+            text = watsonResponse["output"]["generic"][0]["text"]
+        else:
+            text = None
+
+        response = {"action": None, "variables": {}, "text": text}
+
+        if self.is_complete(watsonResponse["context"]):
+            contextVariables = watsonResponse["context"]["skills"]["main skill"]["user_defined"]
+            requirements = actionRequirements[contextVariables["action"]]
+
+            for required in requirements:
+                response["variables"][required] = contextVariables[required]
+
+        return response
 
     # public methods below
 
@@ -101,7 +119,4 @@ class AssistantAPI:
 
         json = res.json()
 
-        if not self.is_complete(json["context"]):
-            return json
-        else:
-            return self.format_response(json["context"])
+        return self.format_response(json)
