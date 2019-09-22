@@ -54,7 +54,19 @@ class AssistantAPI:
     # then, check and see if any of the actions have all required parameters in the context (by using actionRequirements)
     # returns T/F
     def is_complete(self, assistantContext):
-        pass
+        contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
+
+        if "action" in contextVariables:
+            requirements = actionRequirements[contextVariables["action"]]
+
+            for required in requirements:
+                if required not in contextVariables:
+                    return False
+
+            return True
+
+        else:
+            return False
 
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
@@ -76,6 +88,7 @@ class AssistantAPI:
             f"/sessions/{self.profile.assistant_session}/message",
             json={"input": {"text": text, "options": { "return_context": True }}},
         )
+
         if res.status_code == 404:
             self.profile.assistant_session = self.create_session()
             self.profile.save()
@@ -85,4 +98,10 @@ class AssistantAPI:
             res.raise_for_status()
         except HTTPError as e:
             self.process_error(e)
-        return res.json()
+
+        json = res.json()
+
+        if not self.is_complete(json["context"]):
+            return json
+        else:
+            return self.format_response(json["context"])
