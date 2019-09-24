@@ -12,7 +12,8 @@ class LoginView(APIView):
 
     def post(self, request):
         user = authenticate(
-            username=request.data.get("username"), password=request.data.get("password")
+            username=request.data.get("username", "").lower(),
+            password=request.data.get("password", "").lower(),
         )
         if user is not None:
             login(request, user)
@@ -22,8 +23,6 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     def post(self, request):
-        print(request.user)
-        print(request.user.is_authenticated)
         logout(request)
         return Response("", status=status.HTTP_200_OK)
 
@@ -32,8 +31,6 @@ class SessionCheckView(APIView):
     permission_classes = []
 
     def get(self, request):
-        print(request.user)
-        print(request.user.is_authenticated)
         return Response(
             json.dumps({"is_authenticated": request.user.is_authenticated}),
             status=status.HTTP_200_OK,

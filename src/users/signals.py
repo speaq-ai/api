@@ -1,7 +1,13 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.contrib.auth.models import User
 from users.serializers import ProfileSerializer
+
+
+@receiver(pre_save, sender=User)
+def lowercase_username(sender, instance, *args, **kwargs):
+    if instance.username != instance.username.lower():
+        instance.username = instance.username.lower()
 
 
 @receiver(post_save, sender=User)
