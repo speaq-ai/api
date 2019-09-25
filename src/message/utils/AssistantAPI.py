@@ -87,6 +87,8 @@ class AssistantAPI:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
 
+            response["action"] = actionEnum.value
+
             for required in requirements:
                 response["variables"][required.value] = contextVariables[required.value]
 
