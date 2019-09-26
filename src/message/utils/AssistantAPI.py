@@ -59,12 +59,12 @@ class AssistantAPI:
 
         contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
 
-        if "action" in contextVariables:
+        if "action" in contextVariables and contextVariables["action"] is not None:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
 
             for required in requirements:
-                if required not in contextVariables:
+                if required.value not in contextVariables or contextVariables[required.value] is None:
                     return False
 
             return True
@@ -84,10 +84,13 @@ class AssistantAPI:
 
         if self.is_complete(watsonResponse["context"]):
             contextVariables = watsonResponse["context"]["skills"]["main skill"]["user_defined"]
-            requirements = actionRequirements[contextVariables["action"]]
+            actionEnum = ActionNames(contextVariables["action"])
+            requirements = actionRequirements[actionEnum]
+
+            response["action"] = actionEnum.value
 
             for required in requirements:
-                response["variables"][required] = contextVariables[required]
+                response["variables"][required.value] = contextVariables[required.value]
 
         return response
 
