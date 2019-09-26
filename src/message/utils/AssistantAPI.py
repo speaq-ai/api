@@ -59,12 +59,12 @@ class AssistantAPI:
 
         contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
 
-        if "action" in contextVariables:
+        if "action" in contextVariables and contextVariables["action"] is not None:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
 
             for required in requirements:
-                if required.value not in contextVariables:
+                if required.value not in contextVariables or contextVariables[required.value] is None:
                     return False
 
             return True
