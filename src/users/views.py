@@ -13,7 +13,7 @@ class LoginView(APIView):
     def post(self, request):
         user = authenticate(
             username=request.data.get("username", "").lower(),
-            password=request.data.get("password", "").lower(),
+            password=request.data.get("password", ""),
         )
         if user is not None:
             login(request, user)
