@@ -4,9 +4,9 @@ from message.constants import WATSON_ASSISTANT_BASE_URL, WATSON_ASSISTANT_API_KE
 from message.utils.enums import ActionNames, WatsonEntities
 
 actionRequirements = {
-    ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number],
+    ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number, WatsonEntities.DatasetName],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
-    ActionNames.Clear: []
+    ActionNames.Clear: [WatsonEntities.DatasetName]
 }
 
 class AssistantAPI:
