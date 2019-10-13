@@ -6,7 +6,8 @@ from message.utils.enums import ActionNames, WatsonEntities
 actionRequirements = {
     ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number, WatsonEntities.DatasetName],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
-    ActionNames.Clear: [WatsonEntities.DatasetName]
+    ActionNames.Clear: [WatsonEntities.DatasetName],
+    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode]
 }
 
 class AssistantAPI:
