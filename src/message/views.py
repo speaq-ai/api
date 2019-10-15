@@ -7,9 +7,21 @@ from message.utils.AssistantAPI import AssistantAPI
 from users.models import Profile
 from users.serializers import ProfileSerializer
 
+
 class MessageView(APIView):
     def post(self, request):
-        message_text = request.data.get("inputText")
+        """
+        accepts a JSON request body in the following format:
+        {
+          "input": <message to send to watson>,
+          "config": {
+            "inputFormat": "text" | "speech",
+            "outputFormat": "text" | "speech"
+          }
+        }
+        """
+        message = request.data.get("input", request.data.get("inputText"))
+        config = request.data.get("config", {})
         try:
             profile = request.user.profile
         except Profile.DoesNotExist:
@@ -17,5 +29,14 @@ class MessageView(APIView):
 
         assistant_api = AssistantAPI(profile)
 
+        if config.get("inputFormat") == "speech":
+            message_text = assistnat_api.speech_to_text(message)
+        else:
+            message_text = message
+
         data = assistant_api.message(message_text)
+
+        if config.get("outputFormat") == "speech":
+            data["speech"] = assistant_api.text_to_speech(data["text"])
+
         return Response(json.dumps(data), status=status.HTTP_200_OK)
