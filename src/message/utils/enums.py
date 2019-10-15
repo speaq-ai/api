@@ -5,6 +5,8 @@ class ActionNames(Enum):
     AddFilter = "AddFilter"
     LoadDataset = "LoadData"
     Clear = "Clear"
+    ChangeViewMode = "ChangeViewMode"
+    ViewAction = "ViewAction"
 
 # these are the names of entities as they appear as context variables in requests
 class WatsonEntities(Enum):
@@ -12,3 +14,5 @@ class WatsonEntities(Enum):
     DatasetName = "dataset_name"
     FilterComparison = "filter_comparison"
     FilterField = "filter_field"
+    ViewMode = "view_mode"
+    ViewActions = "view_action"

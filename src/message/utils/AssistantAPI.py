@@ -19,6 +19,8 @@ actionRequirements = {
     ],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
     ActionNames.Clear: [WatsonEntities.DatasetName],
+    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ViewAction: [WatsonEntities.ViewActions]
 }
 
 
