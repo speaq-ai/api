@@ -16,7 +16,7 @@ class MessageView(APIView):
           "input": <message to send to watson>,
           "config": {
             "inputFormat": "text" | "speech",
-            "outputFormat": "text" | "speech"
+            "outputAsSpeech": <boolean>
           }
         }
         """
@@ -30,13 +30,13 @@ class MessageView(APIView):
         assistant_api = AssistantAPI(profile)
 
         if config.get("inputFormat") == "speech":
-            message_text = assistnat_api.speech_to_text(message)
+            message_text = assistant_api.speech_to_text(message)
         else:
             message_text = message
 
         data = assistant_api.message(message_text)
 
-        if config.get("outputFormat") == "speech":
+        if config.get("outputAsSpeech"):
             data["speech"] = assistant_api.text_to_speech(data["text"])
 
         return Response(json.dumps(data), status=status.HTTP_200_OK)

@@ -19,6 +19,8 @@ actionRequirements = {
     ],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
     ActionNames.Clear: [WatsonEntities.DatasetName],
+    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ViewAction: [WatsonEntities.ViewActions],
 }
 
 
@@ -42,6 +44,16 @@ class AssistantAPI:
         **kwargs,
     ):
         url = f"{base_url}{url}"
+        print(api_key)
+        print(
+            {
+                "auth": ("apikey", api_key),
+                "headers": {"Content-Type": "application/json"},
+                "params": {"version": "2019-02-28"},
+                **kwargs,
+            }
+        )
+        print(url)
         return requests.request(
             method,
             url,
@@ -150,13 +162,14 @@ class AssistantAPI:
         return self.format_response(json)
 
     def text_to_speech(self, text):
+        print(WATSON_TTS_API_KEY)
         res = self.request(
             "POST",
             "",
-            params={"voice": "en-GB_KateVoice"},
-            json={"text": text},
             base_url=WATSON_TTS_BASE_URL,
             api_key=WATSON_TTS_API_KEY,
+            params={"voice": "en-GB_KateVoice"},
+            json={"text": text},
         )
         try:
             res.raise_for_status()
