@@ -1,6 +1,5 @@
 import overpy
 
-
 def get_location_coords(location_name):
     api = overpy.Overpass()
     result = api.query("relation[name=%s];out center;" % location)
