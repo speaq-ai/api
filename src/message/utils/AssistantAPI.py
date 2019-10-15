@@ -7,7 +7,8 @@ actionRequirements = {
     ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number, WatsonEntities.DatasetName],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
     ActionNames.Clear: [WatsonEntities.DatasetName],
-    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode]
+    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ViewAction: [WatsonEntities.ViewActions]
 }
 
 class AssistantAPI:
