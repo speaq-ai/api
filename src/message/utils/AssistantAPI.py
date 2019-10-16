@@ -1,13 +1,28 @@
 import requests
 from requests import HTTPError
-from message.constants import WATSON_ASSISTANT_BASE_URL, WATSON_ASSISTANT_API_KEY
+from message.constants import (
+    WATSON_ASSISTANT_BASE_URL,
+    WATSON_ASSISTANT_API_KEY,
+    WATSON_TTS_API_KEY,
+    WATSON_TTS_BASE_URL,
+    WATSON_STT_BASE_URL,
+)
 from message.utils.enums import ActionNames, WatsonEntities
+import base64
 
 actionRequirements = {
-    ActionNames.AddFilter: [WatsonEntities.FilterField, WatsonEntities.FilterComparison, WatsonEntities.Number],
+    ActionNames.AddFilter: [
+        WatsonEntities.FilterField,
+        WatsonEntities.FilterComparison,
+        WatsonEntities.Number,
+        WatsonEntities.DatasetName,
+    ],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
-    ActionNames.Clear: []
+    ActionNames.Clear: [WatsonEntities.DatasetName],
+    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ViewAction: [WatsonEntities.ViewActions],
 }
+
 
 class AssistantAPI:
     def __init__(self, profile):
@@ -20,13 +35,30 @@ class AssistantAPI:
     # static methods below
 
     @classmethod
-    def request(cls, method, url, **kwargs):
-        url = f"{WATSON_ASSISTANT_BASE_URL}{url}"
+    def request(
+        cls,
+        method,
+        url,
+        base_url=WATSON_ASSISTANT_BASE_URL,
+        api_key=WATSON_ASSISTANT_API_KEY,
+        **kwargs,
+    ):
+        url = f"{base_url}{url}"
+        print(api_key)
+        print(
+            {
+                "auth": ("apikey", api_key),
+                "headers": {"Content-Type": "application/json"},
+                "params": {"version": "2019-02-28"},
+                **kwargs,
+            }
+        )
+        print(url)
         return requests.request(
             method,
             url,
             **{
-                "auth": ("apikey", WATSON_ASSISTANT_API_KEY),
+                "auth": ("apikey", api_key),
                 "headers": {"Content-Type": "application/json"},
                 "params": {"version": "2019-02-28"},
                 **kwargs,
@@ -64,7 +96,10 @@ class AssistantAPI:
             requirements = actionRequirements[actionEnum]
 
             for required in requirements:
-                if required.value not in contextVariables or contextVariables[required.value] is None:
+                if (
+                    required.value not in contextVariables
+                    or contextVariables[required.value] is None
+                ):
                     return False
 
             return True
@@ -83,7 +118,9 @@ class AssistantAPI:
         response = {"action": None, "variables": {}, "text": text}
 
         if self.is_complete(watsonResponse["context"]):
-            contextVariables = watsonResponse["context"]["skills"]["main skill"]["user_defined"]
+            contextVariables = watsonResponse["context"]["skills"]["main skill"][
+                "user_defined"
+            ]
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
 
@@ -107,7 +144,7 @@ class AssistantAPI:
         res = self.request(
             "POST",
             f"/sessions/{self.profile.assistant_session}/message",
-            json={"input": {"text": text, "options": { "return_context": True }}},
+            json={"input": {"text": text, "options": {"return_context": True}}},
         )
 
         if res.status_code == 404:
@@ -123,3 +160,22 @@ class AssistantAPI:
         json = res.json()
 
         return self.format_response(json)
+
+    def text_to_speech(self, text):
+        print(WATSON_TTS_API_KEY)
+        res = self.request(
+            "POST",
+            "",
+            base_url=WATSON_TTS_BASE_URL,
+            api_key=WATSON_TTS_API_KEY,
+            params={"voice": "en-GB_KateVoice"},
+            json={"text": text},
+        )
+        try:
+            res.raise_for_status()
+        except HTTPError as e:
+            self.process_error(e)
+        return base64.b64encode(res.content).decode("utf-8")
+
+    def speech_to_text(self, speech):
+        pass
