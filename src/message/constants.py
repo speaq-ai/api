@@ -10,3 +10,4 @@ WATSON_STT_BASE_URL = (
     "https://gateway-wdc.watsonplatform.net/speech-to-text/api/v1/recognize"
 )
 WATSON_TTS_API_KEY = os.getenv("WATSON_TTS_API_KEY")
+WATSON_STT_API_KEY = os.getenv("WATSON_STT_API_KEY")
