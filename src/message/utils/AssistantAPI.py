@@ -6,6 +6,7 @@ from message.constants import (
     WATSON_TTS_API_KEY,
     WATSON_TTS_BASE_URL,
     WATSON_STT_BASE_URL,
+    WATSON_STT_API_KEY,
 )
 from message.utils.enums import ActionNames, WatsonEntities
 import base64
@@ -44,25 +45,16 @@ class AssistantAPI:
         url,
         base_url=WATSON_ASSISTANT_BASE_URL,
         api_key=WATSON_ASSISTANT_API_KEY,
+        content_type="application/json",
         **kwargs,
     ):
         url = f"{base_url}{url}"
-        print(api_key)
-        print(
-            {
-                "auth": ("apikey", api_key),
-                "headers": {"Content-Type": "application/json"},
-                "params": {"version": "2019-02-28"},
-                **kwargs,
-            }
-        )
-        print(url)
         return requests.request(
             method,
             url,
             **{
                 "auth": ("apikey", api_key),
-                "headers": {"Content-Type": "application/json"},
+                "headers": {"Content-Type": content_type},
                 "params": {"version": "2019-02-28"},
                 **kwargs,
             },
@@ -172,7 +164,6 @@ class AssistantAPI:
         return self.format_response(json)
 
     def text_to_speech(self, text):
-        print(WATSON_TTS_API_KEY)
         res = self.request(
             "POST",
             "",
@@ -187,5 +178,19 @@ class AssistantAPI:
             self.process_error(e)
         return base64.b64encode(res.content).decode("utf-8")
 
-    def speech_to_text(self, speech):
-        pass
+    def speech_to_text(self, speech, mime_type="audio/flac"):
+        data = base64.b64decode(speech)
+        res = self.request(
+            "POST",
+            "",
+            base_url=WATSON_STT_BASE_URL,
+            api_key=WATSON_STT_API_KEY,
+            content_type=mime_type,
+            data=data,
+        )
+        try:
+            res.raise_for_status()
+        except HTTPError as e:
+            self.process_error(e)
+        print(res.json())
+        return res.json()["results"][0]["alternatives"][0]["transcript"]
