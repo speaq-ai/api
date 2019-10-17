@@ -30,7 +30,8 @@ class MessageView(APIView):
         assistant_api = AssistantAPI(profile)
 
         if config.get("inputFormat") == "speech":
-            message_text = assistant_api.speech_to_text(message)
+            mime_type = config.get("mimeType")
+            message_text = assistant_api.speech_to_text(message, mime_type)
         else:
             message_text = message
 
