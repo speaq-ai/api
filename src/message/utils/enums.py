@@ -7,6 +7,7 @@ class ActionNames(Enum):
     Clear = "Clear"
     ChangeViewMode = "ChangeViewMode"
     ViewAction = "ViewAction"
+    GotoAction = "GotoAction"
 
 # these are the names of entities as they appear as context variables in requests
 class WatsonEntities(Enum):
@@ -16,3 +17,4 @@ class WatsonEntities(Enum):
     FilterField = "filter_field"
     ViewMode = "view_mode"
     ViewActions = "view_action"
+    Location = "location"
