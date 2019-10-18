@@ -11,6 +11,8 @@ from message.constants import (
 from message.utils.enums import ActionNames, WatsonEntities
 import base64
 
+from message.utils.osm import get_location_coords
+
 actionRequirements = {
     ActionNames.AddFilter: [
         WatsonEntities.FilterField,
@@ -22,6 +24,7 @@ actionRequirements = {
     ActionNames.Clear: [WatsonEntities.DatasetName],
     ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
+    ActionNames.GotoAction: [WatsonEntities.Location],
 }
 
 
@@ -99,6 +102,12 @@ class AssistantAPI:
         else:
             return False
 
+    
+    def preprocess(self, context):
+        if "location" in context:
+            context["location"] = get_location_coords(context["location"])
+        return context
+
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
     def format_response(self, watsonResponse):
@@ -113,6 +122,7 @@ class AssistantAPI:
             contextVariables = watsonResponse["context"]["skills"]["main skill"][
                 "user_defined"
             ]
+            contextVariables = self.preprocess(contextVariables)
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
 
