@@ -22,7 +22,7 @@ actionRequirements = {
     ],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
     ActionNames.Clear: [WatsonEntities.DatasetName],
-    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ChangeViewMode: [WatsonEntities.DatasetName, WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
     ActionNames.GotoAction: [WatsonEntities.Location],
 }
@@ -102,7 +102,6 @@ class AssistantAPI:
         else:
             return False
 
-    
     def preprocess(self, context):
         if "location" in context:
             context["location"] = get_location_coords(context["location"])
