@@ -87,6 +87,12 @@ class AssistantAPI:
 
         contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
 
+        # if we fill the response with the only dataset that we see, we must then quit the conversation
+        # so that watson doesn't continue asking for the dataset.
+        # however, we must do that only when we return true - if they are missing other params, don't need
+        # to clear the conversation tree yet
+        quitConversation = False
+
         if "action" in contextVariables and contextVariables["action"] is not None:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
@@ -99,8 +105,13 @@ class AssistantAPI:
                     if (required == WatsonEntities.DatasetName and len(self.datasets) == 1):
                         contextVariables[required.value] = self.datasets[0]
                         # don't return here, need to check the rest of required
+
+                        quitConversation = True
                     else:
                         return False
+
+            if quitConversation:
+                self.message("Everything")
 
             return True
 
@@ -197,5 +208,5 @@ class AssistantAPI:
             res.raise_for_status()
         except HTTPError as e:
             self.process_error(e)
-            
+
         return res.json()["results"][0]["alternatives"][0]["transcript"]
