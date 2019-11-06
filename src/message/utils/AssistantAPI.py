@@ -29,8 +29,9 @@ actionRequirements = {
 
 
 class AssistantAPI:
-    def __init__(self, profile):
+    def __init__(self, profile, datasets):
         self.profile = profile
+        self.datasets = datasets
 
         if not self.profile.assistant_session:
             self.profile.assistant_session = self.create_session()
@@ -95,7 +96,11 @@ class AssistantAPI:
                     required.value not in contextVariables
                     or contextVariables[required.value] is None
                 ):
-                    return False
+                    if (required == WatsonEntities.DatasetName and len(self.datasets) == 1):
+                        contextVariables[required.value] = self.datasets[0]
+                        # don't return here, need to check the rest of required
+                    else:
+                        return False
 
             return True
 
@@ -121,6 +126,7 @@ class AssistantAPI:
             contextVariables = watsonResponse["context"]["skills"]["main skill"][
                 "user_defined"
             ]
+
             contextVariables = self.preprocess(contextVariables)
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
@@ -191,5 +197,5 @@ class AssistantAPI:
             res.raise_for_status()
         except HTTPError as e:
             self.process_error(e)
-        print(res.json())
+            
         return res.json()["results"][0]["alternatives"][0]["transcript"]
