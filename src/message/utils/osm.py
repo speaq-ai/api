@@ -10,10 +10,12 @@ def capitalize_location(location_name):
 
 def get_location_coords(location_name):
     api = overpy.Overpass()
-    result = api.query('relation["name"="%s"];out center;' % capitalize_location(location_name))
-    max_rel = result.relations[0]
-    for rel in result.relations:
-        if len(rel.members) + len(rel.tags) > len(max_rel.members) + len(max_rel.tags):
-            max_rel = rel
-
-    return float(max_rel.center_lat), float(max_rel.center_lon)
+    try:
+        result = api.query('node["name"="%s"];out center;' % capitalize_location(location_name))
+        max_node = result.nodes[0]
+        for node in result.nodes:
+            if len(node.tags) > len(max_node.tags):
+                max_node = node
+        return float(max_node.lat), float(max_node.lon)
+    except OverpassTooManyRequests:
+        return get_location_coords(location_name)
