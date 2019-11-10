@@ -25,6 +25,7 @@ actionRequirements = {
     ActionNames.ChangeViewMode: [WatsonEntities.DatasetName, WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
     ActionNames.GotoAction: [WatsonEntities.Location],
+    ActionNames.LocationFilter: [WatsonEntities.DatasetName, WatsonEntities.Location],
 }
 
 
