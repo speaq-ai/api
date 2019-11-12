@@ -25,6 +25,17 @@ actionRequirements = {
     ActionNames.ChangeViewMode: [WatsonEntities.DatasetName, WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
     ActionNames.GotoAction: [WatsonEntities.Location],
+    ActionNames.AddDatetimeFilterUnary: [
+        WatsonEntities.FilterComparison,
+        WatsonEntities.Date,
+        WatsonEntities.DatasetName,
+    ],
+    ActionNames.AddDatetimeFilterBinary: [
+        WatsonEntities.FilterComparison,
+        WatsonEntities.StartDate,
+        WatsonEntities.EndDate,
+        WatsonEntities.DatasetName,
+    ],
 }
 
 
@@ -92,7 +103,6 @@ class AssistantAPI:
         # however, we must do that only when we return true - if they are missing other params, don't need
         # to clear the conversation tree yet
         quitConversation = False
-
         if "action" in contextVariables and contextVariables["action"] is not None:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
@@ -102,10 +112,12 @@ class AssistantAPI:
                     required.value not in contextVariables
                     or contextVariables[required.value] is None
                 ):
-                    if (required == WatsonEntities.DatasetName and len(self.datasets) == 1):
+                    if (
+                        required == WatsonEntities.DatasetName
+                        and len(self.datasets) == 1
+                    ):
                         contextVariables[required.value] = self.datasets[0]
                         # don't return here, need to check the rest of required
-
                         quitConversation = True
                     else:
                         return False
@@ -123,6 +135,28 @@ class AssistantAPI:
             context["location"] = get_location_coords(context["location"])
         return context
 
+    def patch_context(self, watson_response):
+        """
+        patch udf context variables in cases where watson can detect an intent 
+        that requires multiple context assignments but fails to actually assign values.
+        """
+        entities = watson_response["output"]["entities"]
+        context_variables = watson_response["context"]["skills"]["main skill"][
+            "user_defined"
+        ]
+        action = context_variables.get("action")
+        if (
+            action is not None
+            and ActionNames(action) == ActionNames.AddDatetimeFilterBinary
+        ):
+            date_objs = filter(lambda e: e["entity"] == "sys-date", entities)
+            dates = list(map(lambda e: e["value"], date_objs))
+            dates.sort()
+            if not len(dates):
+                return  # shouldn't be possible, but may want to raise an error here
+            context_variables[(WatsonEntities.StartDate.value)] = dates[0]
+            context_variables[WatsonEntities.EndDate.value] = dates[-1]
+
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
     def format_response(self, watsonResponse):
@@ -133,6 +167,8 @@ class AssistantAPI:
 
         response = {"action": None, "variables": {}, "text": text}
 
+        # patch context for date ranges missed by Watson
+        self.patch_context(watsonResponse)
         if self.is_complete(watsonResponse["context"]):
             contextVariables = watsonResponse["context"]["skills"]["main skill"][
                 "user_defined"
