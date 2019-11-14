@@ -1,3 +1,5 @@
+import math
+
 import overpy
 
 
@@ -19,3 +21,10 @@ def get_location_coords(location_name):
         return float(max_node.lat), float(max_node.lon)
     except OverpassTooManyRequests:
         return get_location_coords(location_name)
+
+def get_location_bbox(location_name, radius=100):
+    api = overpy.Overpass()
+    lat, lon = get_location_coords(location_name)
+    lon_disp = radius / (math.cos(math.radians(lat)) * 69.172)
+    lat_disp = radius / 69.172
+    return lat - lat_disp, lon - lon_disp, lat + lat_disp, lon + lon_disp
