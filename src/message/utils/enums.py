@@ -8,6 +8,7 @@ class ActionNames(Enum):
     ChangeViewMode = "ChangeViewMode"
     ViewAction = "ViewAction"
     GotoAction = "GotoAction"
+    LocationFilter = "LocationFilter"
     AddDatetimeFilterUnary = "AddDatetimeFilterUnary"
     AddDatetimeFilterBinary = "AddDatetimeFilterBinary"
 
