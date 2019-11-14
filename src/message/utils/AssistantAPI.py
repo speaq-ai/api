@@ -25,9 +25,7 @@ actionRequirements = {
     ActionNames.ChangeViewMode: [WatsonEntities.DatasetName, WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
     ActionNames.GotoAction: [WatsonEntities.Location],
-<<<<<<< HEAD
     ActionNames.LocationFilter: [WatsonEntities.DatasetName, WatsonEntities.Location],
-=======
     ActionNames.AddDatetimeFilterUnary: [
         WatsonEntities.FilterComparison,
         WatsonEntities.Date,
@@ -39,7 +37,6 @@ actionRequirements = {
         WatsonEntities.EndDate,
         WatsonEntities.DatasetName,
     ],
->>>>>>> master
 }
 
 
