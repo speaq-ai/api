@@ -37,7 +37,7 @@ class MessageView(APIView):
             message_text = message
 
         data = assistant_api.message(message_text)
-
+        data["input_text"] = message_text
         if config.get("outputAsSpeech"):
             data["speech"] = assistant_api.text_to_speech(data["text"])
 

@@ -93,7 +93,8 @@ class AssistantAPI:
     # check the response by comparing the intent to the actions it can take
     # then, check and see if any of the actions have all required parameters in the context (by using actionRequirements)
     # returns T/F
-    def is_complete(self, assistantContext):
+    def is_complete(self, watsonResponse):
+        assistantContext = watsonResponse["context"]
         if "user_defined" not in assistantContext["skills"]["main skill"]:
             return False
 
@@ -124,7 +125,12 @@ class AssistantAPI:
                         return False
 
             if quitConversation:
-                self.message("Everything")
+                # get the next response in the chain and return with current response
+                new_response = self.message("Everything")
+                if len(watsonResponse["output"]["generic"]):
+                    watsonResponse["output"]["generic"][0]["text"] = new_response["text"]
+                else:
+                    watsonResponse["output"]["generic"] = [{"text": new_response["text"]}]
 
             return True
 
@@ -161,16 +167,12 @@ class AssistantAPI:
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
     def format_response(self, watsonResponse):
-        if len(watsonResponse["output"]["generic"]) > 0:
-            text = watsonResponse["output"]["generic"][0]["text"]
-        else:
-            text = None
-
-        response = {"action": None, "variables": {}, "text": text}
+    
+        response = {"action": None, "variables": {}, "text": None}
 
         # patch context for date ranges missed by Watson
         self.patch_context(watsonResponse)
-        if self.is_complete(watsonResponse["context"]):
+        if self.is_complete(watsonResponse):
             contextVariables = watsonResponse["context"]["skills"]["main skill"][
                 "user_defined"
             ]
@@ -183,6 +185,12 @@ class AssistantAPI:
 
             for required in requirements:
                 response["variables"][required.value] = contextVariables[required.value]
+
+        # moved this to the end of the method b/c we need to see if original text is updated in is_complete
+        if len(watsonResponse["output"]["generic"]) > 0:
+            response["text"] = watsonResponse["output"]["generic"][0]["text"]
+        else:
+            response["text"] = None
 
         return response
 
