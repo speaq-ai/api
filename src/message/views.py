@@ -22,12 +22,13 @@ class MessageView(APIView):
         """
         message = request.data.get("input", request.data.get("inputText"))
         config = request.data.get("config", {})
+        datasets = request.data.get("datasets", [])
         try:
             profile = request.user.profile
         except Profile.DoesNotExist:
             profile = ProfileSerializer(data={"user": request.user}).save()
 
-        assistant_api = AssistantAPI(profile)
+        assistant_api = AssistantAPI(profile, datasets)
 
         if config.get("inputFormat") == "speech":
             mime_type = config.get("mimeType")
@@ -36,7 +37,7 @@ class MessageView(APIView):
             message_text = message
 
         data = assistant_api.message(message_text)
-
+        data["input_text"] = message_text
         if config.get("outputAsSpeech"):
             data["speech"] = assistant_api.text_to_speech(data["text"])
 

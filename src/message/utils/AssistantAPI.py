@@ -22,15 +22,28 @@ actionRequirements = {
     ],
     ActionNames.LoadDataset: [WatsonEntities.DatasetName],
     ActionNames.Clear: [WatsonEntities.DatasetName],
-    ActionNames.ChangeViewMode: [WatsonEntities.ViewMode],
+    ActionNames.ChangeViewMode: [WatsonEntities.DatasetName, WatsonEntities.ViewMode],
     ActionNames.ViewAction: [WatsonEntities.ViewActions],
     ActionNames.GotoAction: [WatsonEntities.Location],
+    ActionNames.LocationFilter: [WatsonEntities.DatasetName, WatsonEntities.Location],
+    ActionNames.AddDatetimeFilterUnary: [
+        WatsonEntities.FilterComparison,
+        WatsonEntities.Date,
+        WatsonEntities.DatasetName,
+    ],
+    ActionNames.AddDatetimeFilterBinary: [
+        WatsonEntities.FilterComparison,
+        WatsonEntities.StartDate,
+        WatsonEntities.EndDate,
+        WatsonEntities.DatasetName,
+    ],
 }
 
 
 class AssistantAPI:
-    def __init__(self, profile):
+    def __init__(self, profile, datasets):
         self.profile = profile
+        self.datasets = datasets
 
         if not self.profile.assistant_session:
             self.profile.assistant_session = self.create_session()
@@ -80,12 +93,18 @@ class AssistantAPI:
     # check the response by comparing the intent to the actions it can take
     # then, check and see if any of the actions have all required parameters in the context (by using actionRequirements)
     # returns T/F
-    def is_complete(self, assistantContext):
+    def is_complete(self, watsonResponse):
+        assistantContext = watsonResponse["context"]
         if "user_defined" not in assistantContext["skills"]["main skill"]:
             return False
 
         contextVariables = assistantContext["skills"]["main skill"]["user_defined"]
 
+        # if we fill the response with the only dataset that we see, we must then quit the conversation
+        # so that watson doesn't continue asking for the dataset.
+        # however, we must do that only when we return true - if they are missing other params, don't need
+        # to clear the conversation tree yet
+        quitConversation = False
         if "action" in contextVariables and contextVariables["action"] is not None:
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
@@ -95,33 +114,69 @@ class AssistantAPI:
                     required.value not in contextVariables
                     or contextVariables[required.value] is None
                 ):
-                    return False
+                    if (
+                        required == WatsonEntities.DatasetName
+                        and len(self.datasets) == 1
+                    ):
+                        contextVariables[required.value] = self.datasets[0]
+                        # don't return here, need to check the rest of required
+                        quitConversation = True
+                    else:
+                        return False
+
+            if quitConversation:
+                # get the next response in the chain and return with current response
+                new_response = self.message("Everything")
+                if len(watsonResponse["output"]["generic"]):
+                    watsonResponse["output"]["generic"][0]["text"] = new_response["text"]
+                else:
+                    watsonResponse["output"]["generic"] = [{"text": new_response["text"]}]
 
             return True
 
         else:
             return False
 
-    
     def preprocess(self, context):
         if "location" in context:
             context["location"] = get_location_coords(context["location"])
         return context
 
+    def patch_context(self, watson_response):
+        """
+        patch udf context variables in cases where watson can detect an intent 
+        that requires multiple context assignments but fails to actually assign values.
+        """
+        entities = watson_response["output"]["entities"]
+        context_variables = watson_response["context"]["skills"]["main skill"][
+            "user_defined"
+        ]
+        action = context_variables.get("action")
+        if (
+            action is not None
+            and ActionNames(action) == ActionNames.AddDatetimeFilterBinary
+        ):
+            date_objs = filter(lambda e: e["entity"] == "sys-date", entities)
+            dates = list(map(lambda e: e["value"], date_objs))
+            dates.sort()
+            if not len(dates):
+                return  # shouldn't be possible, but may want to raise an error here
+            context_variables[(WatsonEntities.StartDate.value)] = dates[0]
+            context_variables[WatsonEntities.EndDate.value] = dates[-1]
+
     # Formats the response to the client. Includes any parameters and respective actions if this is a complete
     # response.
     def format_response(self, watsonResponse):
-        if len(watsonResponse["output"]["generic"]) > 0:
-            text = watsonResponse["output"]["generic"][0]["text"]
-        else:
-            text = None
+    
+        response = {"action": None, "variables": {}, "text": None}
 
-        response = {"action": None, "variables": {}, "text": text}
-
-        if self.is_complete(watsonResponse["context"]):
+        # patch context for date ranges missed by Watson
+        self.patch_context(watsonResponse)
+        if self.is_complete(watsonResponse):
             contextVariables = watsonResponse["context"]["skills"]["main skill"][
                 "user_defined"
             ]
+
             contextVariables = self.preprocess(contextVariables)
             actionEnum = ActionNames(contextVariables["action"])
             requirements = actionRequirements[actionEnum]
@@ -130,6 +185,12 @@ class AssistantAPI:
 
             for required in requirements:
                 response["variables"][required.value] = contextVariables[required.value]
+
+        # moved this to the end of the method b/c we need to see if original text is updated in is_complete
+        if len(watsonResponse["output"]["generic"]) > 0:
+            response["text"] = watsonResponse["output"]["generic"][0]["text"]
+        else:
+            response["text"] = None
 
         return response
 
@@ -192,5 +253,5 @@ class AssistantAPI:
             res.raise_for_status()
         except HTTPError as e:
             self.process_error(e)
-        print(res.json())
+
         return res.json()["results"][0]["alternatives"][0]["transcript"]

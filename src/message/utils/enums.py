@@ -8,6 +8,10 @@ class ActionNames(Enum):
     ChangeViewMode = "ChangeViewMode"
     ViewAction = "ViewAction"
     GotoAction = "GotoAction"
+    LocationFilter = "LocationFilter"
+    AddDatetimeFilterUnary = "AddDatetimeFilterUnary"
+    AddDatetimeFilterBinary = "AddDatetimeFilterBinary"
+
 
 # these are the names of entities as they appear as context variables in requests
 class WatsonEntities(Enum):
@@ -18,3 +22,6 @@ class WatsonEntities(Enum):
     ViewMode = "view_mode"
     ViewActions = "view_action"
     Location = "location"
+    StartDate = "date_start"
+    EndDate = "date_end"
+    Date = "date"
