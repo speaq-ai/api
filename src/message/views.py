@@ -7,12 +7,16 @@ from message.utils.AssistantAPI import AssistantAPI
 from users.models import Profile
 from users.serializers import ProfileSerializer
 
-def kaggle_search(request, query):
+def kaggle_search(request):
     # TODO
     # pass the query to the functions that Jamie defines here
+    datasets = jamies_function(request.data)
 
     # filter the results that Jamie gives here, format, and return
-    pass
+    datasets = [dataset for dataset in datasets if dataset.size < 5000] # placeholder
+
+    # todo, check serialization
+    return Response(json.dumps(datasets), status=status.HTTP_200_OK)
 
 class MessageView(APIView):
     def post(self, request):
