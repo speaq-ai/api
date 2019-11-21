@@ -7,6 +7,12 @@ from message.utils.AssistantAPI import AssistantAPI
 from users.models import Profile
 from users.serializers import ProfileSerializer
 
+def kaggle_search(request, query):
+    # TODO
+    # pass the query to the functions that Jamie defines here
+
+    # filter the results that Jamie gives here, format, and return
+    pass
 
 class MessageView(APIView):
     def post(self, request):
