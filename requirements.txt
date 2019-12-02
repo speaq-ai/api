@@ -20,3 +20,4 @@ virtualenv==16.7.5
 virtualenv-clone==0.2.6
 virtualenvwrapper==4.7.2
 websocket-client==0.48.0
+kaggle==1.5.6
