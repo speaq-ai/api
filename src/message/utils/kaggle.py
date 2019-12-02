@@ -3,7 +3,6 @@ import csv
 
 from io import StringIO
 
-
 config_dir = "~/.kaggle"
 os.environ["KAGGLE_CONFIG_DIR"] = os.path.expanduser(config_dir)
 
