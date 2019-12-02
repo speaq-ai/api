@@ -7,7 +7,7 @@ from io import StringIO
 config_dir = "~/.kaggle"
 os.environ["KAGGLE_CONFIG_DIR"] = os.path.expanduser(config_dir)
 
-def list(sort=None, max_size=None, min_size=None, file_type=None, license_name=None, tags=None, search=None):
+def list_datasets(sort=None, max_size=None, min_size=None, file_type=None, license_name=None, tags=None, search=None):
     args_dict = {
         "--sort-by": sort,
         "--max-size": max_size,
