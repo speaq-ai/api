@@ -20,7 +20,7 @@ def list_datasets(sort=None, max_size=None, min_size=None, file_type=None, licen
     args = "kaggle datasets list"
     for key in args_dict.keys():
         if args_dict[key] is not None:
-            args += " %s '%s'" % (key, args_dict[key])
+            args += " %s %s" % (key, args_dict[key])
     args += " --csv"
 
     links = []
@@ -30,7 +30,7 @@ def list_datasets(sort=None, max_size=None, min_size=None, file_type=None, licen
     return links
 
 def files(dataset):
-    args = "kaggle datasets list %s --csv" % dataset
+    args = "kaggle datasets files %s --csv" % dataset
     res = os.popen(args).read()
     return res
 
