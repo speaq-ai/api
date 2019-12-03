@@ -8,12 +8,13 @@ from users.models import Profile
 from users.serializers import ProfileSerializer
 from message.utils.kaggle import list_datasets
 
-def kaggle_search(request):
+class SearchView(APIView):
+    def post(self, request):
     # pass the query to the functions that Jamie defines here
-    datasets = list_datasets(max_size = 5000, search = request.data)
+        datasets = list_datasets(max_size = 5000, file_type="csv", search = request.data.get("query"))
 
-    # check serialization
-    return Response(json.dumps(datasets), status=status.HTTP_200_OK)
+        # check serialization
+        return Response(json.dumps(datasets), status=status.HTTP_200_OK)
 
 class MessageView(APIView):
     def post(self, request):
