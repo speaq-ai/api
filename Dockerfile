@@ -8,6 +8,7 @@ ADD ./requirements.txt /speaq/api
 RUN pip install -r /speaq/api/requirements.txt
 
 ADD . /speaq/api
+ADD .kaggle /root/.kaggle
 
 WORKDIR /speaq/api/src
 
